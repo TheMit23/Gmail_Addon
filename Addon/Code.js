@@ -11,9 +11,20 @@ function onGmailMessageOpen(e) {
     var replyTo = message.getReplyTo() || sender; 
     var authResults = message.getHeader("Authentication-Results") || ""; 
     var returnPath = message.getHeader("Return-Path") || "";
+
+    var attachments = [];
+    var rawAttachments = message.getAttachments({includeInlineImages: false});
+    for (var i = 0; i < rawAttachments.length; i++) {
+      var att = rawAttachments[i];
+      attachments.push({
+        filename: att.getName(),
+        mime_type: att.getContentType(),
+        size_bytes: att.getSize()
+      });
+    }
     
-    //Connect to the backend server
-    var url = "https://ladder-specimen-chariot.ngrok-free.dev/analyze"; 
+    // Backend URL — use your tunnel or deployed API (do not commit a live ngrok URL for submission).
+    var url = "https://YOUR-TUNNEL.example/analyze";
     
     var payload = {
       "sender": sender,
@@ -21,7 +32,8 @@ function onGmailMessageOpen(e) {
       "body": body,
       "reply_to": replyTo,
       "auth_results": authResults,
-      "return_path": returnPath
+      "return_path": returnPath,
+      "attachments": attachments
     };
     
     // POST request details
@@ -71,15 +83,12 @@ function buildResultCard(subject, sender, score, verdict, findings) {
   var verdictColor = (score >= 75) ? "#FF0000" : (score >= 40) ? "#FFA500" : "#008000";
   resultSection.addWidget(CardService.newTextParagraph().setText("<b>Verdict:</b> <font color='" + verdictColor + "'>" + verdict + "</font>"));
   
-  // תיקון הצגת הממצאים
   if (findings && findings.length > 0) {
     var reasonsText = "<b>Analysis Reasons:</b><br>";
     for (var i = 0; i < findings.length; i++) {
-      // כאן הקסם: ניגשים ל-description של האובייקט
       var description = findings[i].description;
       var severity = findings[i].severity;
-      
-      // בונוס: הוספת אייקון לפי חומרה
+
       var icon = (severity >= 3) ? "🔴 " : (severity >= 2) ? "🟠 " : "⚪ ";
       reasonsText += icon + description + "<br>";
     }

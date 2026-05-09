@@ -22,7 +22,7 @@ def parse_sender_parts(sender_raw: str):
     
     return name_part, email_part.lower()
 def check_domain_similarity(target_domain: str) -> Optional[str]:
-    # נרמול Unicode הוא קריטי כאן נגד Homograph attacks
+    # NFKC normalization matters for homograph / confusable-domain detection.
     normalized_target = unicodedata.normalize('NFKC', target_domain).lower()
     
     for trusted_domain in TOP_DOMAINS:
